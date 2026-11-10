@@ -1,0 +1,6 @@
+import type {Nutrients} from './db';
+export type FoodResult={id:string;name:string;brand:string;per100:Nutrients;source:string};
+export async function searchFoods(query:string):Promise<FoodResult[]>{if(query.trim().length<2)return [];const url=`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=12&fields=code,product_name,brands,nutriments`;
+const response=await fetch(url);if(!response.ok)throw new Error('Database alimentare non raggiungibile');const data=await response.json();return (data.products||[]).filter((p:any)=>p.product_name&&p.nutriments).map((p:any)=>({id:String(p.code),name:String(p.product_name),brand:String(p.brands||''),per100:{kcal:num(p.nutriments['energy-kcal_100g']),protein:num(p.nutriments.proteins_100g),carbs:num(p.nutriments.carbohydrates_100g),fat:num(p.nutriments.fat_100g)},source:`Open Food Facts · codice ${p.code}`}));}
+function num(x:unknown){return typeof x==='number'&&Number.isFinite(x)&&x>=0?x:null;}
+export function scale(per100:Nutrients,grams:number):Nutrients{const f=(v:number|null)=>v===null?null:Math.round(v*grams)/100;return{kcal:f(per100.kcal),protein:f(per100.protein),carbs:f(per100.carbs),fat:f(per100.fat)};}
