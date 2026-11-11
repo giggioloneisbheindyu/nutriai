@@ -6,7 +6,8 @@ function addModelsButton() {
   if (!card || card.querySelector('[data-gemini-model-check]')) return;
 
   const tokenLabel = [...card.querySelectorAll('label')].find((item) => item.textContent?.trim().startsWith('Token personale'));
-  const tokenInput = tokenLabel?.querySelector('input');
+  if (!tokenLabel) return;
+  const tokenInput = tokenLabel.querySelector('input');
   if (!tokenInput) return;
 
   const button = document.createElement('button');
