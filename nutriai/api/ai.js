@@ -199,8 +199,19 @@ export default async function handler(req, res) {
       signal: controller.signal
     });
     if (!upstream.ok) {
-      return fail(res, upstream.status === 429 ? 429 : 502, upstream.status === 429 ? 'Limite del servizio AI raggiunto; riprova più tardi.' : 'Il servizio AI non è al momento disponibile');
-    }
+  const status = upstream.status;
+  const messages = {
+    400: 'Richiesta Gemini non valida (400)',
+    401: 'Autenticazione Gemini fallita (401)',
+    403: 'Chiave Gemini o accesso al modello non autorizzati (403)',
+    404: 'Modello Gemini non trovato (404)',
+    429: 'Quota Gemini esaurita (429)',
+    500: 'Errore interno Gemini (500)',
+    503: 'Gemini temporaneamente non disponibile (503)'
+  };
+  return fail(res, status === 429 ? 429 : 502,
+    messages[status] || `Errore del servizio Gemini (${status})`);
+}
     const data = await upstream.json();
     const output = data?.candidates?.[0]?.content?.parts?.map((part) => part.text || '').join('').trim();
     if (typeof output !== 'string' || !output || output.length > MAX_MODEL_OUTPUT_CHARS) return fail(res, 502, 'Risposta AI non valida');
