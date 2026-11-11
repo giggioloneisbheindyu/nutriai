@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'node:crypto';
 const TASKS = new Set(['plan', 'photo', 'chat', 'recipes']);
 const MAX_BODY_BYTES = 1_500_000;
 const MAX_IMAGE_BASE64_CHARS = 1_300_000;
@@ -40,10 +41,9 @@ function checkRateLimit(req) {
 }
 
 function safeEqual(a, b) {
-  const crypto = require('node:crypto');
   const left = Buffer.from(a);
   const right = Buffer.from(b);
-  return left.length === right.length && crypto.timingSafeEqual(left, right);
+  return left.length === right.length && timingSafeEqual(left, right);
 }
 
 function validatePayload(task, payload) {
